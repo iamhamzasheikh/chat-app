@@ -3,6 +3,7 @@
         "Cbqu",
         "chatapp",
         "dqmjelf",
-        "usercontroller"
+        "usercontroller",
+        "VITE_BACKEND_URL"
     ]
 }
