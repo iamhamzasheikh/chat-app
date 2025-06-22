@@ -5,13 +5,18 @@ import Login from './Pages/Login'
 import Profile from './Pages/Profile'
 import { Toaster } from "react-hot-toast"
 import { AuthContext } from '../context/AuthContext'
+import Loader from './Components/Loader'
 
 const App = () => {
 
-  const { authUser } = useContext(AuthContext);
+  const { authUser, loading } = useContext(AuthContext);
+
+
 
   return (
     <>
+
+      {loading && <Loader />}
       <div className="bg-[url('./src/assets/bgImage.svg')] bg-cover">
         <Toaster />
         <Routes>

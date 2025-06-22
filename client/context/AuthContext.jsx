@@ -4,6 +4,7 @@ import axios from 'axios'
 import { io } from 'socket.io-client'
 
 
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.baseURL = backendUrl;
 
@@ -16,6 +17,7 @@ export const AuthProvider = ({ children }) => {
     const [authUser, setAuthUser] = useState(null);
     const [onlineUser, setOnlineUser] = useState([]);
     const [socket, setSocket] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // check if the user is Authenticated and if socket, set the user data and connect the socket
 
@@ -33,7 +35,11 @@ export const AuthProvider = ({ children }) => {
     //     }
     // }
     const checkAuth = async () => {
-        if (!token) return; // ✅ Avoid making request if no token
+        
+        if (!token) {
+            setLoading(false);
+            return; // ✅ Avoid making request if no token
+        }
 
         try {
             const { data } = await axios.get("/api/auth/check");
@@ -43,6 +49,8 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             toast.error(error.response?.data?.message || error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -82,10 +90,33 @@ export const AuthProvider = ({ children }) => {
 
     // update profile function to handle user profile updates
 
-    const updateProfile = async (body) => {
+    // const updateProfile = async (body) => {
 
+    //     try {
+    //         const { data } = await axios.put("/api/auth/update-profile", body);
+    //         if (data.success) {
+    //             setAuthUser(data.user);
+    //             toast.success("profile updated successfully");
+    //         }
+
+    //         else {
+    //             toast.error(data.message)
+    //         }
+
+    //     } catch (error) {
+    //         toast.error(error.message)
+    //     }
+
+    // }
+
+    const updateProfile = async (body) => {
         try {
-            const { data } = await axios.put("/api/auth/update-profile", body);
+            const { data } = await axios.put("/api/auth/update-profile", body, {
+                headers: {
+                    token: token
+                }
+            });
+
             if (data.success) {
                 setAuthUser(data.user);
                 toast.success("profile updated successfully");
@@ -94,11 +125,9 @@ export const AuthProvider = ({ children }) => {
             else {
                 toast.error(data.message)
             }
-
         } catch (error) {
-            toast.error(error.message)
+            toast.error(error.response?.data?.message || error.message)
         }
-
     }
 
     // connect socket function to handle socket connection and online user update 
@@ -121,13 +150,23 @@ export const AuthProvider = ({ children }) => {
         })
     }
 
+    // useEffect(() => {
+    //     if (token) {
+    //         axios.defaults.headers.common["token"] = token;
+    //     }
+    //     checkAuth();
+
+    // }, [])
+
     useEffect(() => {
         if (token) {
             axios.defaults.headers.common["token"] = token;
+        } else {
+            delete axios.defaults.headers.common["token"];
         }
         checkAuth();
+    }, [token])
 
-    }, [])
 
     const value = {
         axios,
@@ -137,6 +176,7 @@ export const AuthProvider = ({ children }) => {
         token, setToken,
         login, logout,
         updateProfile,
+        loading,
     }
 
     return (
@@ -145,3 +185,4 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     )
 }
+
