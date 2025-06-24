@@ -11,8 +11,6 @@ const App = () => {
 
   const { authUser, loading } = useContext(AuthContext);
 
-
-
   return (
     <>
 

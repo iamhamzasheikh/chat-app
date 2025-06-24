@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
 
     //     } catch (error) {
     //         toast.error(error.message)
+    
     //     }
     // }
     const checkAuth = async () => {

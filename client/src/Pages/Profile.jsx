@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import assets from '../assets/assets'
 import { useNavigate, } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext'
+import toast from 'react-hot-toast'
 
 const Profile = () => {
 
@@ -13,8 +14,28 @@ const Profile = () => {
   const [bio, setBio] = useState(authUser.bio);
 
 
-  const handleSubmit = async (e) => {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!selectedImg) {
+  //     await updateProfile({ fullName: name, bio });
+  //     navigate('/');
+  //     return;
+  //   }
+
+  //   const reader = new FileReader();
+  //   reader.readAsDataURL(selectedImg);
+  //   reader.onload = async () => {
+  //     const base64Image = reader.result;
+  //     await updateProfile({ profilePic: base64Image, fullName: name, bio });
+  //     navigate('/');
+  //   }
+
+
+  // }
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!selectedImg) {
       await updateProfile({ fullName: name, bio });
       navigate('/');
@@ -25,12 +46,22 @@ const Profile = () => {
     reader.readAsDataURL(selectedImg);
     reader.onload = async () => {
       const base64Image = reader.result;
-      await updateProfile({ profilePic: base64Image, fullName: name, bio });
+
+      const toastId = toast.loading("Uploading...");
+      await updateProfile(
+        { profilePic: base64Image, fullName: name, bio },
+        (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          toast.loading(`Uploading... ${percentCompleted}%`, { id: toastId });
+        }
+      );
+
+      toast.dismiss(toastId);
       navigate('/');
-    }
-
-
-  }
+    };
+  };
 
   return (
     <div className='min-h-screen bg-cover bg-no-repeat flex items-center justify-center'>
@@ -65,7 +96,8 @@ const Profile = () => {
 
         {/* right-side */}
 
-        <img className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10  ${selectedImg && 'rounded-full'}`} src={assets.logo_icon} alt="logo" />
+        <img className={`max-w-44 aspect-square rounded-full mx-10 max-sm:mt-10  ${selectedImg && 'rounded-full'}`}
+          src={authUser?.profilePic || assets.logo_icon} alt="logo" />
       </div>
 
     </div>
