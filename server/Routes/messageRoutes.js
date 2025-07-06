@@ -4,9 +4,9 @@ import { getMessage, getUsersFromSidebar, markMessageAsSeen, sendMessage } from 
 
 const messageRouter = express.Router();
 
-messageRouter.get("/user", protectRoute, getUsersFromSidebar);
+messageRouter.get("/users", protectRoute, getUsersFromSidebar);
 messageRouter.get("/:id", protectRoute, getMessage);
-messageRouter.put("mark/:id", protectRoute, markMessageAsSeen);
+messageRouter.put("/mark/:id", protectRoute, markMessageAsSeen);
 messageRouter.post("/send/:id", protectRoute, sendMessage)
 
 

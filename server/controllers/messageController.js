@@ -5,38 +5,69 @@ import { io, userSocketMap } from '../server.js';
 
 // get all users excepts the current login user 
 
+// export const getUsersFromSidebar = async (req, res) => {
+
+//     try {
+
+//         const userId = req.user._id;
+
+//         const filterUsers = await User.find({ _id: { $ne: userId } }).select('-password')
+
+//         // count unseen message
+
+//         const unseenMessage = {}
+//         const promises = filterUsers.map(async (user) => {
+
+//             const messages = await Message.find({
+//                 senderId: user._id,
+//                 receiverId: userId,
+//                 seen: false
+//             });
+//             if (messages.length > 0) {
+//                 unseenMessage[user._id] = messages.length;
+//             }
+//         })
+
+//         await Promise.all(promises);
+//         res.json({ success: true, users: filterUsers, unseenMessages })
+
+//     } catch (error) {
+//         console.log(error.message);
+//         res.json({ success: false, message: filterUsers, unseenMessages })
+//     }
+
+// }
+
 export const getUsersFromSidebar = async (req, res) => {
-
     try {
-
         const userId = req.user._id;
 
-        const filterUsers = await User.find({ _id: { $ne: userId } }).select('-password')
+        const filterUsers = await User.find({ _id: { $ne: userId } }).select('-password');
 
-        // count unseen message
-
-        const unseenMessage = {}
+        // count unseen messages
+        const unseenMessages = {};
         const promises = filterUsers.map(async (user) => {
-
             const messages = await Message.find({
                 senderId: user._id,
-                receiverId: user._id,
+                receiverId: userId,
                 seen: false
             });
-            if (messages.length > 0) {
-                unseenMessage[user._id] = messages.length;
-            }
-        })
 
-        await promises.all(promises);
-        res.json({ success: true, users: filterUsers, unseenMessage })
+            if (messages.length > 0) {
+                unseenMessages[user._id] = messages.length;
+            }
+        });
+
+        await Promise.all(promises);
+
+        res.json({ success: true, users: filterUsers, unseenMessages });
 
     } catch (error) {
-        console.log(error.message);
-        res.json({ success: false, message: filterUsers, unseenMessage })
+        console.error("Error in getUsersFromSidebar:", error.message);
+        res.status(500).json({ success: false, message: "Failed to fetch users" });
     }
+};
 
-}
 
 // get all messages from selected user
 
@@ -74,7 +105,7 @@ export const markMessageAsSeen = async (req, res) => {
 
         const { id } = req.params;
         await Message.findByIdAndUpdate(id, { seen: true });
-        req.json({ success: true });
+        res.json({ success: true });
 
     } catch (error) {
         console.log(error.message);
@@ -90,9 +121,16 @@ export const sendMessage = async (req, res) => {
 
     try {
 
+        // const { text, image } = req.body;
+        // const receiverId = req.params;
+        // const senderId = req.user.id;
+
         const { text, image } = req.body;
-        const receiverId = req.params;
-        const senderId = req.user.id;
+        const { id: receiverId } = req.params; // ✅ Correct: Destructure `id` from params
+        const senderId = req.user._id; // Also ensure `_id` is used if your schema expects it
+
+        console.log("Sender ID:", senderId); // Debug
+        console.log("Receiver ID:", receiverId); // Debug
 
         let imageUrl;
         if (image) {
@@ -100,7 +138,7 @@ export const sendMessage = async (req, res) => {
             imageUrl = uploadResponse.secure_url;
         }
 
-        const newMessage = Message.create({
+        const newMessage = await Message.create({
             senderId,
             receiverId,
             text,
@@ -110,11 +148,18 @@ export const sendMessage = async (req, res) => {
         //Emit the new message to the receivers sockets
 
         const receiverSocketId = userSocketMap[receiverId];
-        if(receiverSocketId) {
+        if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage)
         }
 
-        res.json({success: true, newMessage});
+        //emit the new message to the sender
+
+        const senderSocketId = userSocketMap[senderId];
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("newMessage", newMessage);
+        }
+
+        res.json({ success: true, newMessage });
 
 
     } catch (error) {
