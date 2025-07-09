@@ -233,7 +233,18 @@ const ChatContainer = () => {
 
         <p className="flex-1 text-lg text-white flex items-center gap-2">
           {selectedUser.fullName}
-          <span className={`w-2 h-2 rounded-full ${onlineUsers?.includes(selectedUser._id) ? "bg-green-500" : "bg-gray-400"}`}></span>
+          {/* <span className={`w-2 h-2 rounded-full ${onlineUsers?.includes(selectedUser._id) ? "bg-green-500" : "bg-gray-400"}`}></span> */}
+
+          <span
+            className={`w-2 h-2 rounded-full ${onlineUsers?.some((id) =>
+              id?.toString().trim() === selectedUser?._id?.toString().trim()
+            )
+                ? "bg-green-500"
+                : "bg-gray-400"
+              }`}
+          ></span>
+
+
         </p>
         <img onClick={() => setSelectedUser(null)} src={assets.arrow_icon} alt="back" className="md:hidden max-w-7" />
         <img src={assets.help_icon} alt="help" className="max-md:hidden max-w-5" />

@@ -1,15 +1,17 @@
 import React, { useContext, useState } from 'react'
 import assets from '../assets/assets'
 import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
 
-  const [currState, setCurrState] = useState('signup');
+  const [currState, setCurrState] = useState('login');
   const [fullName, setFullName] = useState('');
   const [email, SetEmail] = useState('');
   const [password, setPassword] = useState('');
   const [bio, setBio] = useState('');
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
+  const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
 
 
   const { login } = useContext(AuthContext);
@@ -17,6 +19,12 @@ const Login = () => {
   const onSubmitHandler = (event) => {
     event.preventDefault();
 
+    //check if user has accepted the privacy policy
+
+    if (!isPolicyAccepted) {
+      toast.error('Please accept the privacy policy');
+      return;
+    }
 
     if (currState === 'signup' && !isDataSubmitted) {
       setIsDataSubmitted(true)
@@ -82,21 +90,25 @@ const Login = () => {
         )
         }
 
+        {currState === 'login' && (
+          <p className='text-sm text-violet-500 cursor-pointer' >Forget Password?</p>
+        )}
+
         <button type='submit' className='py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer'>
           {currState === 'signup' ? 'Sign up' : 'Login'}
         </button>
 
         <div className='flex items-center gap-2 text-sm text-gray-500'>
-          <input type="checkbox" />
+          <input type="checkbox" checked={isPolicyAccepted} onChange={(e) => setIsPolicyAccepted(e.target.checked)} />
           <p>Agree to the term of use & privacy policy.</p>
         </div>
 
         <div className='flex flex-col gap-2'>
           {currState === 'signup' ? (
             <p className='text-sm text-gray-600 flex justify-evenly'>Already have an account?
-              <span onClick={() => { setCurrState('Login'); setIsDataSubmitted(false) }} className='font-medium text-violet-500 cursor-pointer'>Login here</span> </p>
+              <span onClick={() => { setCurrState('login'); setIsDataSubmitted(false) }} className='font-medium text-violet-500 cursor-pointer'>Login here</span> </p>
           ) : (
-            <p className='text-sm text-gray-600 flex justify-evenly'>create an account
+            <p className='text-sm text-gray-600 flex justify-evenly'>Create an account
               <span onClick={() => { setCurrState('signup'); setIsDataSubmitted(false) }} className='font-medium text-violet-500 cursor-pointer'>Click here</span> </p>
           )}
         </div>
