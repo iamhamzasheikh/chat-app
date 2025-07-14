@@ -1,5 +1,5 @@
 import express from 'express'
-import { login, signup, updateProfile } from '../controllers/userController.js';
+import { login, signup, updateProfile, sendResetOtp, verifyResetOtp, resetPasswordWithOtp } from '../controllers/userController.js';
 import { checkAuth, protectRoute } from '../Middleware/auth.js';
 
 
@@ -9,5 +9,11 @@ userRouter.post('/signup', signup);
 userRouter.post('/login', login);
 userRouter.put('/update-profile', protectRoute, updateProfile);
 userRouter.get('/check', protectRoute, checkAuth);
+
+// Forget passwords routes
+
+userRouter.post('/forgot-password', sendResetOtp);
+userRouter.post('/verify-otp', verifyResetOtp);
+userRouter.post('/reset-password', resetPasswordWithOtp);
 
 export default userRouter;

@@ -1,9 +1,12 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, } from 'react'
+import {useNavigate} from 'react-router-dom'
 import assets from '../assets/assets'
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Login = () => {
+
+  const navigate = useNavigate();
 
   const [currState, setCurrState] = useState('login');
   const [fullName, setFullName] = useState('');
@@ -91,7 +94,7 @@ const Login = () => {
         }
 
         {currState === 'login' && (
-          <p className='text-sm text-violet-500 cursor-pointer' >Forget Password?</p>
+          <p onClick={()=> navigate('/ResetPassword')} className='text-sm text-violet-500 cursor-pointer' >Forget Password?</p>
         )}
 
         <button type='submit' className='py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer'>

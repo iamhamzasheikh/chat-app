@@ -2,6 +2,12 @@ import cloudinary from '../lib/cloudinary.js';
 import { generateToken } from '../lib/utils.js';
 import User from '../models/User.js'
 import bcrypt from 'bcryptjs'
+import nodemailer from 'nodemailer'
+import 'dotenv/config'
+import transporter from '../lib/nodeMailer.js';
+
+
+
 
 // signup new user
 
@@ -63,6 +69,120 @@ export const login = async (req, res) => {
 
     }
 }
+
+// if user forgot his password
+
+// const transporter = nodemailer.createTransport({
+
+//     host: 'smtp-relay.brevo.com',
+//     port: 587,
+//     secure: false, // use STARTTLS
+//     auth: {
+//         user: process.env.SENDER_EMAIL,
+//         pass: process.env.SENDER_PASS,
+//     }
+
+// });
+
+export const sendResetOtp = async (req, res) => {
+    const { email } = req.body;
+    console.log("received email", email)
+
+    try {
+
+        const user = await User.findOne({ email });
+
+        if (!user)
+            return res.json({ success: false, message: "User not found" });
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); //6-digit otp
+
+        const expiry = Date.now() + 10 * 60 * 1000 // after 10 mints 
+
+        user.resetOtp = otp;
+        user.resetOtpExpireAt = expiry;
+        await user.save();
+
+        await transporter.sendMail({
+            from: process.env.SENDER_EMAIL,
+            to: user.email,
+            subject: 'OTP for the Reset Password',
+            html: `<p>Your OTP is: <b>${otp}</b><br>It is valid for 10 minutes.</p>`
+        });
+
+        res.json({ success: true, message: 'OTP is sent to Email' })
+
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+
+    }
+}
+
+// verify the otp
+
+export const verifyResetOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+
+        const user = await User.findOne({ email });
+
+        if (!user || user.resetOtp !== otp || user.resetOtpExpireAt < Date.now()) {
+            return res.json({ success: false, message: 'Invalid OTP' })
+        }
+
+        res.json({ success: true, message: 'OTP verified' })
+
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+
+// now make function to reset the password
+
+
+export const resetPasswordWithOtp = async (req, res) => {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    try {
+
+        if (newPassword !== confirmPassword) {
+            return res.json({ success: false, message: 'Password do not match' });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.json({ success: false, message: 'User not found' })
+        }
+
+        if (user.resetOtpExpireAt < Date.now()) {
+            return res.json({ success: false, message: 'OTP is Expired' })
+        }
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        user.password = hashed;
+        user.resetOtp = '';
+        user.resetOtpExpireAt = 0;
+
+        await user.save();
+
+        res.json({ success: true, message: 'Password Reset Successfully' });
+
+
+    } catch (error) {
+        console.log(error.message);
+        res.json({ success: false, message: error.message });
+
+    }
+}
+
+
+
+
 
 
 // controller to update user profile details
