@@ -39,15 +39,15 @@ const ResetPassword = () => {
 
   // step-2 verify otp
 
-  const handleVerifyOtp = async () => {
-
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
     if (!otp)
       return toast.error("Enter OTP Please");
 
     try {
 
       const res = await axios.post('/api/auth/verify-otp', { email, otp });
-      alert(res.data.message);
+      toast.success(res.data.message);
       setStep(3);
 
     } catch (error) {
@@ -68,16 +68,41 @@ const ResetPassword = () => {
     if (newPassword !== confirmPassword)
       return toast.error("Password must be same");
 
+    // Enhanced password validation
+    if (newPassword.length < 6) {
+      return toast.error("Password must be at least 6 characters long");
+    }
+
+    // // Check for password strength (optional but recommended)
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/;
+    // if (!passwordRegex.test(newPassword)) {
+    //     return toast.error("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+    // }
+
     try {
+
+      setLoading(true);
 
       const res = await axios.post('/api/auth/reset-password', { email, newPassword, confirmPassword });
 
+      if (res.data.success) {
+        toast.success(res.data.message || 'Password reset successfully')
+      }
+
       alert(res.data.message);
-      setStep(1);
-      setEmail('');
-      setOtp('');
-      setNewPassword('');
-      setConfirmPassword('');
+      // setStep(1);
+      // setEmail('');
+      // setOtp('');
+      // setNewPassword('');
+      // setConfirmPassword('');
+
+      setTimeout(() => {
+        setStep(1);
+        setEmail('');
+        setOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }, 1500);
 
 
     } catch (error) {

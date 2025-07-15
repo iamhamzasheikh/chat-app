@@ -21,8 +21,8 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false, // use STARTTLS
     auth: {
-        user: process.env.SENDER_EMAIL, // Your Brevo email
-        pass: process.env.SENDER_PASS,  // Your Brevo API key (not account password)
+        user: process.env.SMPT_USER, // Your Brevo email
+        pass: process.env.SMPT_PASS,  // Your Brevo API key (not account password)
     },
     // Add these additional options for better reliability
     tls: {
