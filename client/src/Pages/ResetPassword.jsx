@@ -3,6 +3,8 @@ import axios from 'axios'
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import assets from '../assets/assets';
+import { useNavigate } from 'react-router-dom';
+
 
 const ResetPassword = () => {
 
@@ -13,6 +15,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
 
   //step 1 send otp
 
@@ -26,7 +29,8 @@ const ResetPassword = () => {
     try {
 
       const res = await axios.post('/api/auth/forgot-password', { email });
-      toast.success(res.data.message);
+      toast.success(`OTP is sent to ${email}`, res.data.message);
+      localStorage.setItem('resetEmail', email);
       setStep(2);
 
     } catch (error) {
@@ -41,13 +45,19 @@ const ResetPassword = () => {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+
+    const storedEmail = email || localStorage.getItem('resetEmail');
+    if (!storedEmail)
+      return toast.error("Email not found");
+
     if (!otp)
       return toast.error("Enter OTP Please");
 
     try {
 
-      const res = await axios.post('/api/auth/verify-otp', { email, otp });
-      toast.success(res.data.message);
+      const res = await axios.post('/api/auth/verify-otp', { email: email.trim(), otp: otp.trim() });
+      toast.success(res.data.message || 'OTP Verified');
+      setEmail(storedEmail);
       setStep(3);
 
     } catch (error) {
@@ -83,18 +93,13 @@ const ResetPassword = () => {
 
       setLoading(true);
 
-      const res = await axios.post('/api/auth/reset-password', { email, newPassword, confirmPassword });
+      const res = await axios.post('/api/auth/reset-password', { email, otp, newPassword, confirmPassword });
 
       if (res.data.success) {
         toast.success(res.data.message || 'Password reset successfully')
       }
 
-      alert(res.data.message);
-      // setStep(1);
-      // setEmail('');
-      // setOtp('');
-      // setNewPassword('');
-      // setConfirmPassword('');
+      toast.success(res.data.message);
 
       setTimeout(() => {
         setStep(1);
@@ -102,11 +107,14 @@ const ResetPassword = () => {
         setOtp('');
         setNewPassword('');
         setConfirmPassword('');
-      }, 1500);
+        navigate('/login')
+      }, 1000);
 
 
     } catch (error) {
       toast.error(error.response?.data?.message || 'Reset Password Failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,7 +151,7 @@ const ResetPassword = () => {
 
         {step === 2 && (
           <>
-            <input type="number" name="number" id=""
+            <input type="text" name="number" maxLength={6}
               placeholder='Enter 6-digit OTP' value={otp}
               onChange={(e) => setOtp(e.target.value)} required
               className='p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500' />
@@ -169,9 +177,10 @@ const ResetPassword = () => {
             <input type="password" name="confirmPassword" id=""
               placeholder='Confirm Password'
               value={confirmPassword} required
-              onChange={(e) => setConfirmPassword(e.target.value)} />
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className='p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500' />
 
-            <button onClick={handleResetPassword}
+            <button type='button' onClick={handleResetPassword}
               className='py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer'>
               Reset Password
             </button>

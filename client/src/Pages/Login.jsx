@@ -1,8 +1,9 @@
 import React, { useContext, useState, } from 'react'
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets'
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const Login = () => {
 
@@ -15,6 +16,8 @@ const Login = () => {
   const [bio, setBio] = useState('');
   const [isDataSubmitted, setIsDataSubmitted] = useState(false);
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
 
 
   const { login } = useContext(AuthContext);
@@ -77,12 +80,25 @@ const Login = () => {
 
             {/* password */}
 
-            <input onChange={(e) => setPassword(e.target.value)} value={password}
-              type="password"
-              name="password" id="password"
-              placeholder='Enter Password' required
-              className='p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-            />
+            <div className='w-full relative'>
+
+              <input onChange={(e) => setPassword(e.target.value)} value={password}
+                type={showPassword ? 'text' : 'password'}
+                name="password" id="password"
+                placeholder='Enter Password' required
+                className='w-full relative p-2 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              />
+
+              <div
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-400"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </div>
+
+
+            </div>
+
           </>
         )}
 
@@ -94,7 +110,7 @@ const Login = () => {
         }
 
         {currState === 'login' && (
-          <p onClick={()=> navigate('/ResetPassword')} className='text-sm text-violet-500 cursor-pointer' >Forget Password?</p>
+          <p onClick={() => navigate('/ResetPassword')} className='text-sm text-violet-500 cursor-pointer' >Forget Password?</p>
         )}
 
         <button type='submit' className='py-3 bg-gradient-to-r from-purple-400 to-violet-600 text-white rounded-md cursor-pointer'>

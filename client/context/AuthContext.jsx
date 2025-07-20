@@ -32,11 +32,11 @@ export const AuthProvider = ({ children }) => {
 
     //     } catch (error) {
     //         toast.error(error.message)
-    
+
     //     }
     // }
     const checkAuth = async () => {
-        
+
         if (!token) {
             setLoading(false);
             return; // ✅ Avoid making request if no token
@@ -147,7 +147,7 @@ export const AuthProvider = ({ children }) => {
         setSocket(newSocket);
 
         newSocket.on('getOnlineUsers', (userIds) => {
-            console.log("Online users received:", userIds); 
+            console.log("Online users received:", userIds);
             setOnlineUser(userIds);
         })
     }
