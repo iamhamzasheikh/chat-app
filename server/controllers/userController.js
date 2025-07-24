@@ -5,11 +5,48 @@ import bcrypt from 'bcryptjs'
 import nodemailer from 'nodemailer'
 import 'dotenv/config'
 import transporter from '../lib/nodeMailer.js';
+import Otp from '../models/Otp.js';
 
 
 
 
-// signup new user
+// // signup new user
+
+// export const signup = async (req, res) => {
+
+//     const { fullName, email, password, bio } = req.body;
+
+//     try {
+
+//         if (!fullName || !email || !password || !bio) {
+//             return res.json({ success: false, message: 'Missing Details' })
+//         }
+
+//         const user = await User.findOne({ email });
+
+//         if (user) {
+//             return res.json({ success: false, message: 'Email already used' })
+//         }
+
+//         const salt = await bcrypt.genSalt(10);
+//         const hashedPassword = await bcrypt.hash(password, salt);
+
+//         const newUser = await User.create({
+//             fullName, email, password: hashedPassword, bio
+//         })
+
+//         const token = generateToken(newUser._id);
+//         res.json({ success: true, userData: newUser, token, message: 'Account created successfully' })
+
+//     } catch (error) {
+//         res.json({ success: false, message: error.message });
+//         console.log(error.message);
+//     }
+// }
+
+
+
+//request new user or signup using OTP verification
 
 export const signup = async (req, res) => {
 
@@ -18,30 +55,89 @@ export const signup = async (req, res) => {
     try {
 
         if (!fullName || !email || !password || !bio) {
-            return res.json({ success: false, message: 'Missing Details' })
+            return res.json({ success: false, message: 'Missing details' });
         }
 
-        const user = await User.findOne({ email });
-
-        if (user) {
-            return res.json({ success: false, message: 'Email already used' })
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.json({ success: false, message: 'Email already used' });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        const newUser = await User.create({
-            fullName, email, password: hashedPassword, bio
-        })
+        // Remove any previous OTPs for the same email
+        await Otp.deleteMany({ email });
 
-        const token = generateToken(newUser._id);
-        res.json({ success: true, userData: newUser, token, message: 'Account created successfully' })
+        //save new OTP
+        await Otp.create({ email, otp });
+
+        //send OTP via email
+        // Send email
+        const mailOptions = {
+            from: 'zafarhamza789@gmail.com',
+            to: email,
+            subject: 'Your OTP for Signup',
+            html: `<h2>OTP for Signup verification is: ${otp}</h2><p>This OTP is valid for 2 minutes.</p>`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: `OTP sent to your Email: ${email}` });
+
 
     } catch (error) {
-        res.json({ success: false, message: error.message });
         console.log(error.message);
+        res.json({ success: false, message: error.message })
     }
+
 }
+
+export const verifySignupOtp = async (req, res) => {
+    const { email, otp } = req.body;
+
+    try {
+        const record = await Otp.findOne({ email });
+
+        if (!record) {
+            return res.status(400).json({ success: false, message: 'OTP not found or expired' });
+        }
+
+        if (record.otp !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
+
+        // At this point, OTP is correct → create user
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+        const user = await User.create({
+            fullName: req.body.fullName,
+            email,
+            password: hashedPassword,
+            bio: req.body.bio,
+        });
+
+        await Otp.deleteMany({ email }); // Cleanup
+
+        // token 
+        const token = generateToken(user._id);
+        res.json({ success: true, token, userData: user, message: 'Signup successful' });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
 
 // login-a-user
 
@@ -128,10 +224,6 @@ export const verifyResetOtp = async (req, res) => {
 
         const user = await User.findOne({ email });
 
-        // if (!user || user.resetOtp !== otp || user.resetOtpExpireAt < Date.now()) {
-        //     return res.json({ success: false, message: 'Invalid OTP' })
-        // }
-
         if (!user)
             return res.status(400).json({ message: 'User not found' });
 
@@ -176,7 +268,7 @@ export const resetPasswordWithOtp = async (req, res) => {
         }
 
         // After OTP verification, give user more time to reset password
-        if (user.resetOtpExpireAt < Date.now() + 5 * 60 * 1000)  {
+        if (user.resetOtpExpireAt < Date.now() + 5 * 60 * 1000) {
             return res.json({ success: false, message: 'OTP has Expired' })
         }
 
