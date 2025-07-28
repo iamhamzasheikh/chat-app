@@ -2,11 +2,16 @@ import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import assets from '../assets/assets'
 import { AuthContext } from '../../context/AuthContext'
-import toast from 'react-hot-toast' 
+import toast from 'react-hot-toast'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import axios from 'axios'
+import { GoogleLogin } from '@react-oauth/google'
+import { jwtDecode } from 'jwt-decode'
+
 
 const Login = () => {
+
+
   const navigate = useNavigate()
   const [currState, setCurrState] = useState('login')
   const [step, setStep] = useState(1)
@@ -20,7 +25,7 @@ const Login = () => {
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  const { login } = useContext(AuthContext)
+  const { login, setToken } = useContext(AuthContext)
 
   const handleStepSubmit = async (e) => {
     e.preventDefault()
@@ -196,6 +201,42 @@ const Login = () => {
               : 'Next'
             : 'Login'}
         </button>
+
+        {/* login via google */}
+
+        <div className="w-full flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              try {
+                const decoded = jwtDecode(credentialResponse.credential);
+                const { email, name, picture, sub } = decoded;
+
+                const res = await axios.post('/api/auth/google', {
+                  email,
+                  fullName: name,
+                  googleId: sub,
+                  avatar: picture,
+                });
+
+                if (res.data.success) {
+                  localStorage.setItem('token', res.data.token);
+                  axios.defaults.headers.common['token'] = res.data.token;
+                  setToken(res.data.token);
+                  toast.success('Login successful via Google');
+                  navigate('/');
+                } else {
+                  toast.error(res.data.message);
+                }
+              } catch (error) {
+                toast.error(error.message);
+              }
+            }}
+            onError={() => toast.error('Google Sign-in Failed')}
+          />
+        </div>
+
+
+
 
         <div className='flex items-center gap-2 text-sm text-gray-500'>
           <input type='checkbox' checked={isPolicyAccepted} onChange={(e) => setIsPolicyAccepted(e.target.checked)} />

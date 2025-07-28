@@ -1,5 +1,5 @@
 import express from 'express'
-import { login, signup, updateProfile, sendResetOtp, verifyResetOtp, resetPasswordWithOtp, verifySignupOtp } from '../controllers/userController.js';
+import { login, signup, updateProfile, sendResetOtp, verifyResetOtp, resetPasswordWithOtp, verifySignupOtp, googleAuth } from '../controllers/userController.js';
 import { checkAuth, protectRoute } from '../Middleware/auth.js';
 
 
@@ -17,5 +17,8 @@ userRouter.get('/check', protectRoute, checkAuth);
 userRouter.post('/forgot-password', sendResetOtp);
 userRouter.post('/verify-otp', verifyResetOtp);
 userRouter.post('/reset-password', resetPasswordWithOtp);
+
+// route for google login 
+userRouter.post('/google', googleAuth);
 
 export default userRouter;

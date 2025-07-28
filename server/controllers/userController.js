@@ -130,15 +130,6 @@ export const verifySignupOtp = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
 // login-a-user
 
 
@@ -165,20 +156,6 @@ export const login = async (req, res) => {
 
     }
 }
-
-// if user forgot his password
-
-// const transporter = nodemailer.createTransport({
-
-//     host: 'smtp-relay.brevo.com',
-//     port: 587,
-//     secure: false, // use STARTTLS
-//     auth: {
-//         user: process.env.SENDER_EMAIL,
-//         pass: process.env.SENDER_PASS,
-//     }
-
-// });
 
 export const sendResetOtp = async (req, res) => {
     const { email } = req.body;
@@ -301,10 +278,6 @@ export const resetPasswordWithOtp = async (req, res) => {
 }
 
 
-
-
-
-
 // controller to update user profile details
 
 export const updateProfile = async (req, res) => {
@@ -333,3 +306,31 @@ export const updateProfile = async (req, res) => {
     }
 
 }
+
+
+// controller for login via google
+
+export const googleAuth = async (req, res) => {
+    const { email, fullName, googleId, avatar } = req.body;
+ 
+    try {
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            const hashedPassword = await bcrypt.hash(googleId, 10);
+            user = new User({
+                fullName,
+                email,
+                password: hashedPassword,
+                avatar,
+                bio: 'Google User',
+            });
+            await user.save();
+        }
+
+        const token = generateToken(user._id);
+        res.json({ success: true, token });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Auth failed' });
+    }
+};

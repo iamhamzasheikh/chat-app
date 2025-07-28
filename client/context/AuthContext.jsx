@@ -21,20 +21,6 @@ export const AuthProvider = ({ children }) => {
 
     // check if the user is Authenticated and if socket, set the user data and connect the socket
 
-    // const checkAuth = async () => {
-    //     try {
-    //         const { data } = await axios.get("/api/auth/check");
-    //         if (data.success) {
-    //             setAuthUser(data.user);
-    //             connectSocket(data.user);
-    //         }
-
-
-    //     } catch (error) {
-    //         toast.error(error.message)
-
-    //     }
-    // }
     const checkAuth = async () => {
 
         if (!token) {
@@ -88,27 +74,6 @@ export const AuthProvider = ({ children }) => {
         toast.success("User Logged out");
         socket.disconnect();
     }
-
-    // update profile function to handle user profile updates
-
-    // const updateProfile = async (body) => {
-
-    //     try {
-    //         const { data } = await axios.put("/api/auth/update-profile", body);
-    //         if (data.success) {
-    //             setAuthUser(data.user);
-    //             toast.success("profile updated successfully");
-    //         }
-
-    //         else {
-    //             toast.error(data.message)
-    //         }
-
-    //     } catch (error) {
-    //         toast.error(error.message)
-    //     }
-
-    // }
 
     const updateProfile = async (body) => {
         try {
