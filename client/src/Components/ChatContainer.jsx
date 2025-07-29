@@ -75,17 +75,11 @@ const ChatContainer = () => {
   return selectedUser ? (
     <>
       <div className="h-full overflow-scroll relative backdrop-blur-lg">
+
         {/* Header */}
         {/* <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500"> */}
 
-        <div
-          className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500 relative"
-          onContextMenu={(e) => {
-            e.preventDefault();
-            setContextMenuPosition({ x: e.pageX, y: e.pageY });
-            setContextMenuVisible(true);
-          }}
-        >
+        <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500 relative">
 
 
           <img src={selectedUser.profilePic || assets.avatar_icon} alt="profile-img" className="w-8 rounded-full" />
@@ -110,7 +104,12 @@ const ChatContainer = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6">
+        <div className="flex flex-col h-[calc(100%-120px)] overflow-y-scroll p-3 pb-6"
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenuPosition({ x: e.clientX, y: e.clientY });
+            setContextMenuVisible(true);
+          }}>
           {messages
             .filter((msg) => msg && msg.senderId && (msg.text || msg.image))
             .map((msg, index) => (
@@ -171,7 +170,14 @@ const ChatContainer = () => {
       {contextMenuVisible && (
 
         <ul className="fixed bg-white text-black shadow-lg rounded-md text-sm z-50"
-          style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
+          // style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
+          style={{
+            top: `${contextMenuPosition.y}px`,
+            left: `${contextMenuPosition.x}px`,
+            zIndex: 9999,
+            minWidth: '150px',
+            boxshadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
           onClick={() => setContextMenuVisible(false)}>
 
           <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
@@ -182,22 +188,24 @@ const ChatContainer = () => {
 
             }}> close chat </li>
 
+
           <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+            onClick={() => {
+              setContextMenuVisible(false);
+              navigate('/edit-profile')
+            }}> Edit profile </li>
+
+          <li className="px-4 py-2 hover:bg-red-500 cursor-pointer"
             onClick={() => {
               setContextMenuVisible(false);
               localStorage.clear();
               toast.success("Logged out");
               window.location.reload();
             }}> Logout </li>
-
-
-          <li className="px-4 py-2 hover:bg-red-500 cursor-pointer"
-            onClick={() => {
-              setContextMenuVisible(false);
-              navigate('/edit-profile')
-            }}> Edit profile </li>
         </ul>
       )}
+
+
     </>
   ) : (
     <div className="flex flex-col items-center justify-center gap-2 text-gray-500 bg-white/10 max-md:hidden">
