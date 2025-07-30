@@ -72,6 +72,29 @@ const ChatContainer = () => {
   }, [contextMenuVisible]);
 
 
+  // function for showing chats bu date 
+
+  const formatDateHeader = (dateString) => {
+
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const isToday = date.toString() === today.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    if (isToday) return 'Today';
+    if (isYesterday) return 'Yesterday';
+
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  }
+
+
   return selectedUser ? (
     <>
       <div className="h-full overflow-scroll relative backdrop-blur-lg">
@@ -110,7 +133,9 @@ const ChatContainer = () => {
             setContextMenuPosition({ x: e.clientX, y: e.clientY });
             setContextMenuVisible(true);
           }}>
-          {messages
+
+
+          {/* {messages
             .filter((msg) => msg && msg.senderId && (msg.text || msg.image))
             .map((msg, index) => (
               <div
@@ -142,7 +167,71 @@ const ChatContainer = () => {
                   <p className="text-gray-500">{formatMessageTime(msg.createdAt)}</p>
                 </div>
               </div>
-            ))}
+            ))} */}
+
+          {messages
+            .filter((msg) => msg && msg.senderId && (msg.text || msg.image))
+            .reduce((acc, msg, index, array) => {
+              const msgDate = new Date(msg.createdAt).toDateString();
+              const prevMsgDate = index > 0 ? new Date(array[index - 1].createdAt).toDateString() : null;
+
+              if (msgDate !== prevMsgDate) {
+                acc.push({ type: "date", date: msg.createdAt });
+              }
+
+              acc.push({ type: "message", msg });
+              return acc;
+            }, [])
+            .map((item, index) => {
+              if (item.type === "date") {
+                return (
+                  <div key={`date-${index}`} className="text-center text-sm text-gray-300 my-4">
+                    <span className="bg-white/10 px-3 py-1 rounded-full">{formatDateHeader(item.date)}</span>
+                  </div>
+                );
+              }
+
+              const { msg } = item;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-end gap-2 justify-end ${msg.senderId !== authUser._id ? "flex-row-reverse" : ""}`}
+                >
+                  {msg.image ? (
+                    <img
+                      className="max-w-[230px] border border-gray-700 rounded-lg overflow-hidden mb-8"
+                      src={msg.image}
+                      alt="sent image"
+                    />
+                  ) : (
+                    <p
+                      className={`p-2 max-w-[200px] md:text-sm font-light rounded-lg mb-8 break-all bg-violet-500/30 text-white ${msg.senderId === authUser._id ? "rounded-br-none" : "rounded-bl-none"
+                        }`}
+                    >
+                      {msg.text}
+                    </p>
+                  )}
+
+                  <div className="text-center text-sm">
+                    <img
+                      className="w-7 rounded-full"
+                      src={
+                        msg.senderId === authUser._id
+                          ? authUser.profilePic
+                          : users.find((user) => user._id === msg.senderId)?.profilePic || assets.avatar_icon
+                      }
+                      alt="avatar"
+                    />
+                    <p className="text-gray-500">{formatMessageTime(msg.createdAt)}</p>
+                  </div>
+                </div>
+              );
+            })}
+
+
+
+
           <div ref={scrollEnd}></div>
         </div>
 
@@ -166,6 +255,9 @@ const ChatContainer = () => {
         </div>
 
       </div>
+
+
+      {/* logic for right click */}
 
       {contextMenuVisible && (
 
@@ -192,7 +284,7 @@ const ChatContainer = () => {
           <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
             onClick={() => {
               setContextMenuVisible(false);
-              navigate('/edit-profile')
+              navigate('/profile')
             }}> Edit profile </li>
 
           <li className="px-4 py-2 hover:bg-red-500 cursor-pointer"
