@@ -45,7 +45,16 @@ const ChatContainer = () => {
 
     const reader = new FileReader();
     reader.onloadend = async () => {
-      await sendMessages({ image: reader.result });
+      const toastId = toast.loading('uploading image...');
+
+      try {
+        await sendMessages({ image: reader.result });
+        toast.success('Image sent!', { id: toastId })
+
+      } catch (error) {
+        toast.error(error.message, 'Failed to sent image', { id: toastId })
+      }
+
       e.target.value = "";
     };
     reader.readAsDataURL(file);
@@ -123,7 +132,11 @@ const ChatContainer = () => {
 
           </p>
           <img onClick={() => setSelectedUser(null)} src={assets.arrow_icon} alt="back" className="md:hidden max-w-7" />
-          <img src={assets.help_icon} alt="help" className="max-md:hidden max-w-5" />
+
+          {/* user-info */}
+          <img src={assets.help_icon} onClick={() => navigate('/about')}
+            alt="help" className="max-md:hidden max-w-5 cursor-pointer" />
+
         </div>
 
         {/* Chat Area */}

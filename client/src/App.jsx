@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast"
 import { AuthContext } from '../context/AuthContext'
 import Loader from './Components/Loader'
 import ResetPassword from './Pages/ResetPassword'
+import AboutUser from './Pages/AboutUser'
 
 const App = () => {
 
@@ -23,6 +24,7 @@ const App = () => {
           <Route path='/login' element={!authUser ? <Login /> : <Navigate to="/" />} />
           <Route path='/ResetPassword' element={<ResetPassword />} />
           <Route path='/profile' element={authUser ? <Profile /> : <Navigate to="/login" />} />
+          <Route path='/about' element={authUser ? <AboutUser /> : <Navigate to='/login' />} />
         </Routes>
       </div>
     </>
