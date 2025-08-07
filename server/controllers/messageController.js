@@ -121,10 +121,6 @@ export const sendMessage = async (req, res) => {
 
     try {
 
-        // const { text, image } = req.body;
-        // const receiverId = req.params;
-        // const senderId = req.user.id;
-
         const { text, image } = req.body;
         const { id: receiverId } = req.params; // ✅ Correct: Destructure `id` from params
         const senderId = req.user._id; // Also ensure `_id` is used if your schema expects it
@@ -132,11 +128,35 @@ export const sendMessage = async (req, res) => {
         console.log("Sender ID:", senderId); // Debug
         console.log("Receiver ID:", receiverId); // Debug
 
+        const senderUser = await User.findById(senderId);
+        const receiverUser = await User.findById(receiverId);
+
+        if (!senderUser || !receiverUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found.',
+            });
+        }
+
+        // ✅ Block check
+        if (
+            senderUser.blockedUsers.includes(receiverId) ||
+            receiverUser.blockedUsers.includes(senderId)
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: 'You cannot send messages to this user.',
+            });
+        }
+
+
+
         let imageUrl;
         if (image) {
             const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
         }
+
 
         const newMessage = await Message.create({
             senderId,
@@ -160,6 +180,7 @@ export const sendMessage = async (req, res) => {
         }
 
         res.json({ success: true, newMessage });
+
 
 
     } catch (error) {

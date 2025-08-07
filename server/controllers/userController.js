@@ -307,16 +307,95 @@ export const updateProfile = async (req, res) => {
 
 }
 
+// to block user
+
+export const blockUser = async (req, res) => {
+
+    try {
+        const currentUserId = req.user._id; 
+        const userToBlockId = req.params.id;
+
+        const user = await User.findById(currentUserId);
+        if (!user.blockedUsers.includes(userToBlockId)) {
+            user.blockedUsers.push(userToBlockId);
+            await user.save();
+        }
+
+        res.status(200).json({ success: true, message: 'User blocked' });
+        
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+// Unblock user controller
+export const unblockUser = async (req, res) => {
+
+    try {
+        const currentUserId = req.user._id;
+        const userToUnblockId = req.params.id;
+
+        await User.findByIdAndUpdate(currentUserId, {
+            $pull: { blockedUsers: userToUnblockId }
+        });
+
+        res.status(200).json({ success: true, message: 'User unblocked' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+
+
+
+
 
 // controller for login via google
 
+// export const googleAuth = async (req, res) => {
+//     const { email, fullName, googleId, avatar } = req.body;
+
+//     try {
+//         let user = await User.findOne({ email });
+
+//         if (!user) {
+//             const hashedPassword = await bcrypt.hash(googleId, 10);
+//             user = new User({
+//                 fullName,
+//                 email,
+//                 password: hashedPassword,
+//                 avatar,
+//                 bio: 'Google User',
+//             });
+//             await user.save();
+//         }
+
+//         const token = generateToken(user._id);
+//         res.json({ success: true, token });
+//     } catch (error) {
+//         res.status(500).json({ success: false, message: 'Auth failed' });
+//     }
+// };
+
+
 export const googleAuth = async (req, res) => {
-    const { email, fullName, googleId, avatar } = req.body;
- 
     try {
+        console.log('[GoogleAuth] Incoming request body:', req.body);
+
+        const { email, fullName, googleId, avatar } = req.body;
+
+        if (!email || !googleId || !fullName) {
+            console.warn('[GoogleAuth] Missing fields');
+            return res.status(400).json({ success: false, message: 'Missing required Google user data' });
+        }
+
         let user = await User.findOne({ email });
 
         if (!user) {
+            console.log('[GoogleAuth] Creating new user for email:', email);
+
             const hashedPassword = await bcrypt.hash(googleId, 10);
             user = new User({
                 fullName,
@@ -325,12 +404,23 @@ export const googleAuth = async (req, res) => {
                 avatar,
                 bio: 'Google User',
             });
+
             await user.save();
+        } else {
+            console.log('[GoogleAuth] Existing user found:', email);
         }
 
         const token = generateToken(user._id);
-        res.json({ success: true, token });
+        console.log('[GoogleAuth] Token generated:', token);
+
+        return res.json({ success: true, token });
+
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Auth failed' });
+        console.error('[GoogleAuth] Error occurred:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 };

@@ -103,6 +103,10 @@ const ChatContainer = () => {
     })
   }
 
+  const youBlocked = authUser?.blockedUsers?.includes(selectedUser?._id);
+  const blockedYou = selectedUser?.blockedUsers?.includes(authUser?._id);
+  const isBlocked = youBlocked || blockedYou;
+
 
   return selectedUser ? (
     <>
@@ -250,21 +254,35 @@ const ChatContainer = () => {
 
         {/* Bottom Bar */}
         <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 p-3">
-          <div className="flex flex-1 items-center bg-gray-100/12 px-3 rounded-full">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
-              className="flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placeholder-gray-400 bg-transparent"
-              placeholder="Send a message"
-            />
-            <input onChange={handleSendImage} type="file" id="image" accept="image/*" hidden />
-            <label htmlFor="image">
-              <img src={assets.gallery_icon} alt="gallery" className="w-5 mr-2 cursor-pointer" />
-            </label>
-          </div>
-          <img onClick={handleSendMessage} src={assets.send_button} className="w-7 cursor-pointer" alt="send" />
+
+          {isBlocked ? (
+            <div className="w-full bg-red-600/20 text-red-500 text-sm p-3 rounded-lg text-center">
+              {youBlocked ? `You have blocked ${selectedUser?.fullName || 'this user'}. You cant send messages` : `${selectedUser?.fullName || 'this user'} has blocked you. You can't send messages.`}
+            </div>
+
+
+          ) : (
+
+            <div className="flex flex-1 items-center bg-gray-100/12 px-3 rounded-full">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
+                className="flex-1 text-sm p-3 border-none rounded-lg outline-none text-white placeholder-gray-400 bg-transparent"
+                placeholder="Send a message"
+              />
+              <input onChange={handleSendImage} type="file" id="image" accept="image/*" hidden />
+              <label htmlFor="image">
+                <img src={assets.gallery_icon} alt="gallery" className="w-5 mr-2 cursor-pointer" />
+              </label>
+
+              <img onClick={handleSendMessage} src={assets.send_button} className="w-7 cursor-pointer" alt="send" />
+            </div>
+          )
+
+          }
+
         </div>
 
       </div>

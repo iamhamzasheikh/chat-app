@@ -49,6 +49,7 @@ app.use(cors());
 app.use('/api/status', (req, res) => res.send('Server is running'));
 app.use('/api/auth', userRouter);
 app.use('/api/messages', messageRouter);
+app.use("/api/user", userRouter); 
 
 // connect to mongoDB
 

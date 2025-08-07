@@ -9,31 +9,11 @@ const Profile = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
 
   const [selectedImg, setSelectedImg] = useState(null);
-  const navigate = useNavigate();
   const [name, setName] = useState(authUser.fullName);
   const [bio, setBio] = useState(authUser.bio);
+  const navigate = useNavigate();
 
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (!selectedImg) {
-  //     await updateProfile({ fullName: name, bio });
-  //     navigate('/');
-  //     return;
-  //   }
-
-  //   const reader = new FileReader();
-  //   reader.readAsDataURL(selectedImg);
-  //   reader.onload = async () => {
-  //     const base64Image = reader.result;
-  //     await updateProfile({ profilePic: base64Image, fullName: name, bio });
-  //     navigate('/');
-  //   }
-
-
-  // }
-
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!selectedImg) {
