@@ -9,7 +9,7 @@ const Sidebar = () => {
   const { getUsers, users, selectedUser, setSelectedUser, unseenMessages, setUnseenMessages } = useContext(ChatContext);
 
 
-  const { logout, onlineUsers } = useContext(AuthContext);
+  const { logout, onlineUsers, } = useContext(AuthContext);
 
   const [input, setInput] = useState('');
 

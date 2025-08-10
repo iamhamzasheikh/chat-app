@@ -307,37 +307,84 @@ export const updateProfile = async (req, res) => {
 
 }
 
-// to block user
+// // to block user
+
+// export const blockUser = async (req, res) => {
+
+//     try {
+//         const currentUserId = req.user._id; 
+//         const userToBlockId = req.params.id;
+
+//         const user = await User.findById(currentUserId);
+//         if (!user.blockedUsers.includes(userToBlockId)) {
+//             user.blockedUsers.push(userToBlockId);
+//             await user.save();
+//         }
+
+//         res.status(200).json({ success: true, message: 'User blocked' });
+
+//     } catch (err) {
+//         res.status(500).json({ success: false, message: 'Server error' });
+//     }
+// };
+
+
+// // Unblock user controller
+// export const unblockUser = async (req, res) => {
+
+//     try {
+//         const currentUserId = req.user._id;
+//         const userToUnblockId = req.params.id;
+
+//         await User.findByIdAndUpdate(currentUserId, {
+//             $pull: { blockedUsers: userToUnblockId }
+//         });
+
+//         res.status(200).json({ success: true, message: 'User unblocked' });
+//     } catch (err) {
+//         res.status(500).json({ success: false, message: 'Server error' });
+//     }
+// };
 
 export const blockUser = async (req, res) => {
-
     try {
-        const currentUserId = req.user._id; 
+        const currentUserId = req.user._id;
         const userToBlockId = req.params.id;
 
-        const user = await User.findById(currentUserId);
-        if (!user.blockedUsers.includes(userToBlockId)) {
-            user.blockedUsers.push(userToBlockId);
-            await user.save();
+        // ✅ Current user ke blockedUsers mein add karo
+        const currentUser = await User.findById(currentUserId);
+        if (!currentUser.blockedUsers.includes(userToBlockId)) {
+            currentUser.blockedUsers.push(userToBlockId);
+            await currentUser.save();
+        }
+
+        // ✅ Blocked user ke blockedBy mein current user ko add karo
+        const blockedUser = await User.findById(userToBlockId);
+        if (!blockedUser.blockedBy.includes(currentUserId)) {
+            blockedUser.blockedBy.push(currentUserId);
+            await blockedUser.save();
         }
 
         res.status(200).json({ success: true, message: 'User blocked' });
-        
+
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
-
-// Unblock user controller
 export const unblockUser = async (req, res) => {
-
     try {
         const currentUserId = req.user._id;
         const userToUnblockId = req.params.id;
 
+        // ✅ Current user ke blockedUsers se remove karo
         await User.findByIdAndUpdate(currentUserId, {
             $pull: { blockedUsers: userToUnblockId }
+        });
+
+        // ✅ Unblocked user ke blockedBy se current user ko remove karo
+        await User.findByIdAndUpdate(userToUnblockId, {
+            $pull: { blockedBy: currentUserId }
         });
 
         res.status(200).json({ success: true, message: 'User unblocked' });
@@ -345,40 +392,6 @@ export const unblockUser = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
-
-
-
-
-
-
-
-// controller for login via google
-
-// export const googleAuth = async (req, res) => {
-//     const { email, fullName, googleId, avatar } = req.body;
-
-//     try {
-//         let user = await User.findOne({ email });
-
-//         if (!user) {
-//             const hashedPassword = await bcrypt.hash(googleId, 10);
-//             user = new User({
-//                 fullName,
-//                 email,
-//                 password: hashedPassword,
-//                 avatar,
-//                 bio: 'Google User',
-//             });
-//             await user.save();
-//         }
-
-//         const token = generateToken(user._id);
-//         res.json({ success: true, token });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Auth failed' });
-//     }
-// };
-
 
 export const googleAuth = async (req, res) => {
     try {

@@ -12,6 +12,7 @@
         "nsnd",
         "SMPT",
         "STARTTLS",
+        "unblocker",
         "usercontroller",
         "VITE",
         "VITE_BACKEND_URL"

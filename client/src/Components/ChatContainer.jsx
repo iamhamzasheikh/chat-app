@@ -103,9 +103,17 @@ const ChatContainer = () => {
     })
   }
 
+  // const youBlocked = authUser?.blockedUsers?.includes(selectedUser?._id);
+  // const blockedYou = selectedUser?.blockedUsers?.includes(authUser?._id);
+  // const isBlocked = youBlocked || blockedYou;
+
+  // ✅ Correct way
   const youBlocked = authUser?.blockedUsers?.includes(selectedUser?._id);
-  const blockedYou = selectedUser?.blockedUsers?.includes(authUser?._id);
+  const blockedYou = authUser?.blockedBy?.includes(selectedUser?._id); // ✅ authUser ke blockedBy se check karo
   const isBlocked = youBlocked || blockedYou;
+
+
+  
 
 
   return selectedUser ? (
