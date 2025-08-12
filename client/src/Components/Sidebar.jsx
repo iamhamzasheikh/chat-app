@@ -23,7 +23,8 @@ const Sidebar = () => {
   }, [onlineUsers])
 
   return (
-    <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white ${selectedUser ? 'max-md:hidden' : ''}`}>
+    <div className={`bg-[#8185B2]/10 h-full p-5 rounded-r-xl overflow-y-scroll text-white 
+     ${selectedUser ? 'max-md:hidden' : ''} `}>
 
       <div className='pb-5'>
         <div className='flex justify-between items-center'>
@@ -64,7 +65,9 @@ const Sidebar = () => {
               }
             </div>
 
-            {unseenMessages[user._id] > 0 && <p className='absolute right-0 top-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50'>{unseenMessages[user._id]}</p>}
+            {unseenMessages[user._id] > 0 &&
+              <p className='absolute right-0 top-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50'>
+                {unseenMessages[user._id]}</p>}
           </div>
         ))}
       </div>

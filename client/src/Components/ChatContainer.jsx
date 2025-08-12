@@ -113,7 +113,7 @@ const ChatContainer = () => {
   const isBlocked = youBlocked || blockedYou;
 
 
-  
+
 
 
   return selectedUser ? (
@@ -123,10 +123,14 @@ const ChatContainer = () => {
         {/* Header */}
         {/* <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500"> */}
 
-        <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500 relative">
+        <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500 relative cursor-pointer">
 
 
-          <img src={selectedUser.profilePic || assets.avatar_icon} alt="profile-img" className="w-8 rounded-full" />
+          <img onClick={() => {
+            setContextMenuVisible(false);
+            navigate('/about');
+          }}
+            src={selectedUser.profilePic || assets.avatar_icon} alt="profile-img" className="w-8 rounded-full" />
 
           <p className="flex-1 text-lg text-white flex items-center gap-2">
             {selectedUser.fullName}

@@ -101,11 +101,11 @@ const AboutUser = () => {
 
     return (
         <>
-            <div className='border border-red-600 min-h-screen bg-cover bg-no-repeat flex flex-col gap-5 items-center justify-center'>
+            <div className=' min-h-screen bg-cover bg-no-repeat flex flex-col gap-5 items-center justify-center'>
                 <h3 className='text-white text-2xl'>Friend Info</h3>
 
-                <div className='w-[700px] h-[500px] backdrop-blur-2xl text-gray-300 border-2 border-gray-600
-                flex justify-center pt-10 gap-25 max-sm:flex-col-reverse rounded-lg'>
+                <div className='w-full max-w-[700px] h-auto min-h-[500px] backdrop-blur-2xl text-gray-300 
+                border-2 border-gray-600 flex justify-center pt-10 gap-6 max-sm:flex-col items-center'>
 
                     {/* Profile Picture on the left */}
                     <div className='w-36 h-36 rounded-full overflow-hidden shadow-lg border-2 border-gray-500'>
