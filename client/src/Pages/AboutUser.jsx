@@ -1,9 +1,3 @@
-// import React, { useContext, useState } from 'react'
-// import { AuthContext } from '../../context/AuthContext';
-// import { ChatContext } from '../../context/ChatContext';
-// import toast from 'react-hot-toast';
-// import axios from 'axios';
-
 
 import React, { useContext, useState, useEffect } from 'react'
 import { AuthContext } from '../../context/AuthContext';
