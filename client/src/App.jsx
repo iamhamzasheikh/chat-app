@@ -18,7 +18,7 @@ const App = () => {
     <>
 
       {loading && <Loader />}
-      <div className="bg-[url('./src/assets/bgImage.svg')] bg-cover">
+      <div className="bg-[url('../public/bgImage.svg')] bg-cover">
         <Toaster />
         <Routes>
           <Route path='/' element={authUser ? <Home /> : <Navigate to="/login" />} />
